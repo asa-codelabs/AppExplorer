@@ -4,7 +4,7 @@ import { HandlerContext, selectRangeInEditor } from "../extension";
 import { getGitHubUrl } from "../get-github-url";
 import { getRelativePath } from "../get-relative-path";
 import { LocationFinder } from "../location-finder";
-import { MiroServer } from "../server";
+import type { MiroServerApi } from "../miro-server-api";
 import { SymbolAnchor } from "./create-card";
 
 export async function selectBoard(cardStorage: HandlerContext["cardStorage"]) {
@@ -34,7 +34,7 @@ export async function selectBoard(cardStorage: HandlerContext["cardStorage"]) {
 export const makeBrowseHandler = (
   context: HandlerContext,
   navigateToCard: (card: CardData, preview?: boolean) => Promise<boolean>,
-  miroServer: MiroServer,
+  miroServer: MiroServerApi,
 ) =>
   async function () {
     const { cardStorage } = context;
