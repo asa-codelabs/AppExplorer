@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
 import type { HandlerContext } from "../extension";
 import { getGitHubUrl } from "../get-github-url";
-import { MiroServer } from "../server";
+import type { MiroServerApi } from "../miro-server-api";
 
 export const makeNavigationHandler = (
   context: HandlerContext,
-  miroServer: MiroServer,
+  miroServer: MiroServerApi,
 ) => {
   return async (miroLink: string, locationLink: vscode.LocationLink) => {
     const card = context.cardStorage.getCardByLink(miroLink);

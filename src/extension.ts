@@ -17,10 +17,13 @@ import { EditorDecorator } from "./editor-decorator";
 import type { CardData } from "./EventTypes";
 import { getGitHubUrl } from "./get-github-url";
 import { MiroServer } from "./server";
+import { RemoteMiroServer } from "./remote-server-client";
 import { StatusBarManager } from "./status-bar-manager";
 import { LocationFinder } from "./location-finder";
+import { createBackend } from "./backend";
 import path = require("node:path");
 import fs = require("node:fs");
+import crypto = require("node:crypto");
 
 export type HandlerContext = {
   cardStorage: CardStorage;
@@ -40,6 +43,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const cardStorage = new CardStorage(context);
   const statusBarManager = new StatusBarManager(cardStorage);
   context.subscriptions.push(statusBarManager);
+
+  const tokenKey = "miroServerToken";
+  let authToken = await context.secrets.get(tokenKey);
+  if (!authToken) {
+    authToken = crypto.randomUUID();
+    await context.secrets.store(tokenKey, authToken);
+  }
 
   const handlerContext: HandlerContext = {
     cardStorage,
@@ -66,6 +76,8 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     },
   };
+
+  const backend = createBackend(handlerContext);
 
   const navigateToCard = async (card: CardData, preview = false) => {
     const dest = await locationFinder.findCardDestination(card);
@@ -114,7 +126,58 @@ export async function activate(context: vscode.ExtensionContext) {
     return status === "connected";
   };
 
-  const miroServer = new MiroServer(handlerContext);
+  const miroServer = new RemoteMiroServer(authToken!);
+  let internalServer: MiroServer | undefined = undefined;
+
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  let retryDelay = 500;
+
+  function nextDelay() {
+    const delay = retryDelay + Math.random() * 500;
+    retryDelay = Math.min(retryDelay * 1.5, 10000);
+    return delay;
+  }
+
+  function resetDelay() {
+    retryDelay = 500;
+  }
+
+  async function ensureConnection() {
+    try {
+      await miroServer.waitForConnect();
+      resetDelay();
+      return;
+    } catch {
+      /* ignored */
+    }
+
+    await delay(nextDelay());
+
+    if (!internalServer) {
+      try {
+        internalServer = new MiroServer(backend, authToken!);
+        context.subscriptions.push(internalServer);
+      } catch {
+        // Another workspace probably started the server
+      }
+    }
+
+    try {
+      await miroServer.waitForConnect();
+      resetDelay();
+    } catch {
+      setTimeout(ensureConnection, nextDelay());
+    }
+  }
+
+  miroServer.socket.on("disconnect", () => {
+    setTimeout(ensureConnection, nextDelay());
+  });
+
+  ensureConnection();
   context.subscriptions.push(
     miroServer,
     miroServer.event(async (event) => {

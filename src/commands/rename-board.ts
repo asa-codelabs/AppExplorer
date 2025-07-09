@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import type { HandlerContext } from "../extension";
-import { MiroServer } from "../server";
+import type { MiroServerApi } from "../miro-server-api";
 
 export function makeRenameHandler(
   context: HandlerContext,
-  miroServer: MiroServer,
+  miroServer: MiroServerApi,
 ) {
   return async function renameHandler(boardId?: string) {
     await context.waitForConnections();

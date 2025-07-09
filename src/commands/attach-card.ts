@@ -2,13 +2,13 @@ import * as vscode from "vscode";
 import { CardData } from "../EventTypes";
 import { HandlerContext } from "../extension";
 import { getRelativePath } from "../get-relative-path";
-import { MiroServer } from "../server";
+import type { MiroServerApi } from "../miro-server-api";
 import { makeCardData } from "./create-card";
 import { notEmpty } from "./tag-card";
 
 export const makeAttachCardHandler = (
   context: HandlerContext,
-  miroServer: MiroServer,
+  miroServer: MiroServerApi,
 ) => {
   return async function () {
     const editor = vscode.window.activeTextEditor;

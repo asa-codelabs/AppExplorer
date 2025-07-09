@@ -2,7 +2,7 @@ import { TagColor } from "@mirohq/websdk-types";
 import * as vscode from "vscode";
 import { CardData, allColors } from "../EventTypes";
 import { HandlerContext } from "../extension";
-import { MiroServer } from "../server";
+import type { MiroServerApi } from "../miro-server-api";
 
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return value != null;
@@ -10,7 +10,7 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
 
 export const makeTagCardHandler = (
   context: HandlerContext,
-  miroServer: MiroServer,
+  miroServer: MiroServerApi,
 ) => {
   return async function () {
     await context.waitForConnections();

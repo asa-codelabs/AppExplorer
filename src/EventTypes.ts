@@ -94,3 +94,26 @@ export type ResponseEvents = {
 export type Handler<T extends (...args: any[]) => void, U = void> = (
   ...args: Parameters<T>
 ) => U;
+
+export type MiroEvents =
+  | {
+      type: "connect";
+      boardInfo: { id: string; name: string };
+    }
+  | { type: "disconnect" }
+  | { type: "navigateToCard"; card: CardData }
+  | { type: "updateCard"; miroLink: CardData["miroLink"]; card: CardData | null };
+
+export type ExtensionRequestEvents = {
+  query: (data: {
+    boardId: string;
+    name: keyof Queries;
+    requestId: string;
+    data: any[];
+  }) => void;
+};
+
+export type ExtensionResponseEvents = {
+  queryResult: (data: { requestId: string; response: unknown }) => void;
+  event: (event: MiroEvents) => void;
+};
