@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { CardData, SymbolCardData } from "../../EventTypes";
+import { CardData } from "../../EventTypes";
 import { LocationFinder } from "../../location-finder";
 import { MockMiroClient } from "../mocks/mock-miro-client";
 import { waitFor } from "../suite/test-utils";
@@ -198,7 +198,7 @@ export class E2EVerificationHelper {
 
     // If it's a symbol card, verify cursor positioning
     if (card.type === "symbol") {
-      const symbolCard = card as SymbolCardData;
+      const symbolCard = card as CardData;
       position = await this.verifyCursorPosition(symbolCard.symbol, editor);
     }
 

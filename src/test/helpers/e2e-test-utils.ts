@@ -2,7 +2,7 @@ import * as assert from "assert";
 import baseDebug from "debug";
 import invariant from "tiny-invariant";
 import * as vscode from "vscode";
-import { CardData, SymbolCardData } from "../../EventTypes";
+import { CardData } from "../../EventTypes";
 import { LocationFinder } from "../../location-finder";
 import { LogPipe } from "../../log-pipe";
 import { createDebug } from "../../utils/create-debug";
@@ -34,7 +34,7 @@ export type LogCapture = {
 /**
  * Type guard to check if a card is a symbol card
  */
-export function isSymbolCard(card: CardData): card is SymbolCardData {
+export function isSymbolCard(card: CardData): card is CardData {
   return card.type === "symbol";
 }
 
@@ -431,7 +431,7 @@ export class E2ETestUtils {
           symbol: "nonexistentSymbol",
           miroLink:
             "https://miro.com/app/board/mock-board-test-123/invalid-symbol",
-        } as SymbolCardData;
+        } as CardData;
       default:
         throw new Error(`Unknown invalid card type: ${type}`);
     }

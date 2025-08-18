@@ -122,6 +122,13 @@ export class AppCardElement extends AppElement {
           <div class="app-card--tags">
             <span class="tag">${this.cardData.path}</span>
             <span class="tag symbol-tag">${this.cardData.symbol}</span>
+            ${this.cardData.tags?.map(
+              (tag) => html`
+                <span class=${classNames("tag", `tag-${tag.color}`)}>
+                  ${tag.title}
+                </span>
+              `,
+            )}
           </div>
 
           ${html`

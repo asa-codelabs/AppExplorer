@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { SymbolCardData } from "../../../EventTypes";
+import { CardData } from "../../../EventTypes";
 import { createDebug } from "../../../utils/create-debug";
 import { TEST_CARDS } from "../../fixtures/card-data";
 import { E2ETestUtils, isSymbolCard } from "../../helpers/e2e-test-utils";
@@ -60,7 +60,7 @@ suite("E2E Navigation Tests", () => {
         card.path === "example.ts" &&
         isSymbolCard(card) &&
         card.symbol === "testMethod",
-    ) as SymbolCardData;
+    ) as CardData;
     testCard = { ...testCard, status: "disconnected" };
 
     assert.ok(testCard, "Test card for testMethod not found");
@@ -125,9 +125,7 @@ suite("E2E Navigation Tests", () => {
     const storedCard = await waitForValue(() => {
       const storedCards = mockClient.getTestCards();
       const card = storedCards.find(
-        (c) =>
-          isSymbolCard(c) &&
-          c.symbol === (invalidCard as SymbolCardData).symbol,
+        (c) => isSymbolCard(c) && c.symbol === (invalidCard as CardData).symbol,
       );
       debug("card", card);
       debug("invalidCard", invalidCard);
@@ -150,7 +148,7 @@ suite("E2E Navigation Tests", () => {
     invalidCard.status = "disconnected";
 
     debug(
-      `Testing error handling for nonexistent symbol: ${(invalidCard as SymbolCardData).symbol}`,
+      `Testing error handling for nonexistent symbol: ${(invalidCard as CardData).symbol}`,
     );
 
     // Simulate navigation to card with invalid symbol
@@ -200,7 +198,7 @@ suite("E2E Navigation Tests", () => {
           isSymbolCard(card) &&
           card.symbol === "testFunction",
       ),
-    ].filter(Boolean) as SymbolCardData[];
+    ].filter(Boolean) as CardData[];
 
     assert.strictEqual(
       cards.length,

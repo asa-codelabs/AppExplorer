@@ -29,12 +29,12 @@ body.sidebar {
   overflow-y: auto;
 }
 
-.tag-red {
+.tag.tag-red {
   background-color: #ffadad;
   border-color: rgb(219, 79, 79);
 }
 
-.tag-magenta {
+.tag.tag-magenta {
   background-color: rgb(255, 171, 236);
   border-color: rgb(213, 90, 200);
 }
@@ -44,51 +44,51 @@ body.sidebar {
   border-color: rgb(70, 31, 152);
 }
 
-.tag-light_green {
+.tag.tag-light_green {
   background-color: rgb(194, 235, 127);
   border-color: rgb(117, 159, 56);
 }
 
-.tag-green {
+.tag.tag-green {
   background-color: rgb(173, 240, 199);
   border-color: rgb(15, 168, 60);
 }
 
-.tag-dark_green {
+.tag.tag-dark_green {
   background-color: rgb(6, 116, 41);
   border-color: rgb(10, 91, 35);
 }
 
-.tag-cyan {
+.tag.tag-cyan {
   background-color: rgb(168, 233, 255);
   border-color: rgb(14, 157, 205);
 }
 
-.tag-blue {
+.tag.tag-blue {
   background-color: rgb(160, 196, 251);
   border-color: rgb(86, 136, 211);
 }
 
-.tag-dark_blue {
+.tag.tag-dark_blue {
   background-color: rgb(48, 91, 171);
   border-color: rgb(29, 71, 146);
 }
 
-.tag-yellow {
+.tag.tag-yellow {
   background-color: rgb(255, 237, 123);
   border-color: rgb(186, 138, 18);
 }
 
-.tag-gray {
+.tag.tag-gray {
   background-color: rgb(214, 214, 214);
   border-color: rgb(144, 142, 142);
 }
 
-.tag-dark_gray {
+.tag.tag-dark_gray {
   background-color: rgb(89, 89, 89);
   border-color: rgb(75, 75, 75);
 }
 
-.tag-black {
+.tag.tag-black {
   background-color: rgb(26, 26, 26);
 }

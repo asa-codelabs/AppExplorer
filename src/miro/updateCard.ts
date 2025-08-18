@@ -40,6 +40,7 @@ export async function updateCard(
     });
   }
   card.fields = fields;
+  card.tagIds = data.tags?.map((tag) => tag.id) ?? [];
   await card.sync();
 
   return card;

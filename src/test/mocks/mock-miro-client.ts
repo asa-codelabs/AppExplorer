@@ -2,7 +2,7 @@ import createDebugger from "debug";
 import { EventEmitter } from "events";
 import { Socket, io as socketIO } from "socket.io-client";
 import * as vscode from "vscode";
-import { AppExplorerTag, CardData, SymbolCardData } from "../../EventTypes";
+import { AppExplorerTag, CardData } from "../../EventTypes";
 import { CardStorage, MemoryAdapter } from "../../card-storage";
 import { EventsTo, RoutedEvents } from "../../socket-events";
 
@@ -11,7 +11,7 @@ const debug = createDebugger("app-explorer:test:mock-miro-client");
 /**
  * Type guard to check if a card is a symbol card
  */
-function isSymbolCard(card: CardData): card is SymbolCardData {
+function isSymbolCard(card: CardData): card is CardData {
   return card.type === "symbol";
 }
 

@@ -1,27 +1,19 @@
-import type { AppCard, TagColor } from "@mirohq/websdk-types";
+import type { AppCard, Tag, TagColor } from "@mirohq/websdk-types";
 import { BoardInfo, CardStorage } from "./card-storage";
 import { WorkspaceServerSocket } from "./server/server";
 
-export type SymbolCardData = {
+export type CardData = {
   boardId: string;
   type: "symbol";
   title: string;
   path: string;
   symbol: string;
+  tags?: Array<Pick<Tag, "id" | "title" | "color">>;
   miroLink?: string;
   codeLink: string | null;
   status: AppCard["status"];
   description?: string;
 };
-
-export type GroupCardData = Pick<
-  SymbolCardData,
-  "title" | "path" | "status" | "miroLink" | "boardId"
-> & {
-  type: "group";
-};
-
-export type CardData = SymbolCardData;
 
 export const allColors: `${TagColor}`[] = [
   "red",

@@ -515,7 +515,7 @@ async function editCardModal(card: AppCard) {
     data: cardData,
     url: "/edit-card.html",
     width: 500,
-    height: 600,
+    height: 700,
   });
 
   const updatedCardData = await waitForClose();
@@ -538,6 +538,10 @@ export async function extractCardData(card: Item): Promise<CardData | null> {
       await card.sync();
     }
 
+    const allTags = await miro.board.get({
+      type: "tag",
+    });
+
     return {
       type: "symbol",
       boardId,
@@ -545,6 +549,9 @@ export async function extractCardData(card: Item): Promise<CardData | null> {
       description: decode(card.description),
       miroLink: `https://miro.com/app/board/${boardId}/?moveToWidget=${card.id}`,
       path: path,
+      tags: card.tagIds
+        .map((id) => allTags.find((t) => t.id === id))
+        .filter(notEmpty),
       symbol: symbol,
       codeLink: codeLink,
       status: isAppCard(card) ? card.status : "disconnected",

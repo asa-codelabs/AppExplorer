@@ -1,6 +1,7 @@
 /* global miro */
 
 import { Task } from "@lit/task";
+import { Tag } from "@mirohq/websdk-types";
 import "@webcomponents/webcomponentsjs";
 import classNames from "classnames";
 import { css, html } from "lit";
@@ -16,6 +17,7 @@ import { mirotoneStyles, rawMirotoneStyles } from "./mirotone";
 import "./onboarding";
 import "./server-status";
 import { SocketProvider } from "./socket-context";
+import "./tags-control";
 // Mirotone must be loaded on the host page to set all the CSS variables.
 document.head.insertAdjacentHTML(
   "beforeend",
@@ -40,23 +42,101 @@ export class EditCardElement extends AppElement {
       }
 
       app-explorer-edit-card .form-group {
-        margin: 1rem 0;
+        /* Allow smooth changes for sizing tweaks we apply */
+        transition:
+          flex-grow 0.3s ease-in-out,
+          max-height 0.3s ease-in-out,
+          margin 0.3s ease-in-out,
+          padding 0.3s ease-in-out;
       }
-
-      .form-group.expand {
-        position: absolute;
-        inset: 0;
+      /*
+       * (A) Layout foundation
+       * We turn the <form> into a flex column container so that the
+       * description row can grow to consume remaining vertical space when
+       * expanded. This avoids using position:absolute (which caused the snap
+       * / jump) and instead lets the browser interpolate flex-grow + heights.
+       */
+      form {
         display: flex;
         flex-direction: column;
-        z-index: 10;
-        background-color: white;
-        padding: 1rem;
-        border: 1px solid black;
-        margin: 0;
+        height: 100%;
+        overflow-y: auto;
+      }
 
-        & > label + * {
-          flex-grow: 1;
-        }
+      /*
+       * (B) Description group base state
+       * Start with no flex-grow so it behaves like a normal row.
+       * We also constrain its max-height to something close to the initial
+       * textarea height so we can animate max-height -> large value.
+       */
+      .description-group {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 0;
+        max-height: 9rem; /* ~ label + small textarea */
+        /* Ensure internal elements stretch when expanded */
+      }
+
+      .description-group > label + * {
+        /* The textarea right after label should grow inside the group */
+        flex-grow: 1;
+      }
+
+      /*
+       * (C) Expanded state
+       * When the form has the .description-expanded class we:
+       *  - Give the description group flex-grow:1 so it takes remaining space
+       *  - Increase its max-height to a very large value so the transition
+       *    animates the vertical growth (max-height is animatable, height:auto is not)
+       *  - Collapse (visually) the other groups so the description can appear
+       *    to take over the form. We fade + shrink them to maintain spatial context.
+       */
+      form.description-expanded .description-group {
+        flex-grow: 1;
+        max-height: 200vh; /* Large enough to fill container; animates smoothly */
+        margin-top: 16px;
+      }
+
+      /* Make the textarea fill the available vertical space when expanded */
+      form.description-expanded .description-group textarea {
+        height: 100%;
+        resize: none; /* Prevent manual resize from fighting layout */
+      }
+
+      /*
+       * (D) Non-description groups in expanded mode:
+       * We fade them out and collapse their vertical footprint so the
+       * description appears dominant without an abrupt absolute positioning jump.
+       * Using max-height + margin collapse for a smooth transition.
+       */
+      form.description-expanded .form-group:not(.description-group),
+      form.description-expanded .flex-row:not(.description-group) {
+        max-height: 0 !important;
+        margin: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      /* Keep the action row (buttons) also hidden while expanded */
+      form.description-expanded .flex-row.space-between {
+        max-height: 0;
+        margin: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      /*
+       * (E) Visual affordance for the expand button when active.
+       * (Optional) Rotate icon or change color. Keeping minimal now; hook provided.
+       */
+      .description-group .expand-button[aria-pressed="true"] {
+        filter: brightness(0.9);
+      }
+
+      .edit-card-form .card {
+        margin-bottom: auto;
       }
 
       .form-group > label {
@@ -125,11 +205,17 @@ export class EditCardElement extends AppElement {
 
     return this.cardData.render({
       initial: () => html`<p>Loading...</p>`,
-      complete: (data) => {
-        const cardData = { ...data, ...this.cardEdits };
+      complete: (data: CardData) => {
+        const merged = { ...data, ...this.cardEdits };
+        const cardData: CardData = { ...merged, tags: merged.tags ?? [] };
         return html`
-          <form @submit=${this.handleSubmit}>
-            <app-card .cardData=${cardData}></app-card>
+          <form
+            class=${classNames("edit-card-form", {
+              "description-expanded": this._expandDescription,
+            })}
+            @submit=${this.handleSubmit}
+          >
+            <app-card class="card" .cardData=${cardData}></app-card>
             <div class="form-group">
               <label for="title">Title</label>
               <input
@@ -146,11 +232,7 @@ export class EditCardElement extends AppElement {
                 id="title"
               />
             </div>
-            <div
-              class=${classNames("form-group", {
-                expand: this._expandDescription,
-              })}
-            >
+            <div class=${classNames("form-group description-group", {})}>
               <label for="description"
                 >description
 
@@ -160,6 +242,8 @@ export class EditCardElement extends AppElement {
                   class="button button-primary button-small expand-button"
                   type="button"
                   aria-label="label"
+                  aria-expanded=${this._expandDescription ? "true" : "false"}
+                  aria-pressed=${this._expandDescription ? "true" : "false"}
                 >
                   <span class="icon-expand"></span>
                 </button>
@@ -177,6 +261,32 @@ export class EditCardElement extends AppElement {
                 id="description"
                 rows="3"
               ></textarea>
+            </div>
+            <div class="form-group">
+              <label>Tags</label>
+              <app-explorer-tags-control
+                .tags=${cardData.tags || []}
+                .onTagClick=${(toggleTag: Tag) => {
+                  let tags = cardData.tags ?? [];
+                  if (tags.some((tag) => tag.id === toggleTag.id)) {
+                    tags = tags.filter((tag) => tag.id !== toggleTag.id);
+                  } else {
+                    tags = [
+                      ...(tags ?? []),
+                      {
+                        id: toggleTag.id,
+                        title: toggleTag.title,
+                        color: toggleTag.color,
+                      },
+                    ];
+                  }
+
+                  this.cardEdits = {
+                    ...this.cardEdits,
+                    tags,
+                  };
+                }}
+              ></app-explorer-tags-control>
             </div>
             <div class="form-group">
               <label for="symbol">Symbol Path</label>
